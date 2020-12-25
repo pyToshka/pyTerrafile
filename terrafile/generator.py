@@ -25,7 +25,9 @@ def tf_module_recursive(file_path):
 def parse_tf(file_name):
     with open(file_name, "r") as file:
         modules_dict = hcl2.load(file)
-    return modules_dict
+        modules = {k: v for k, v in modules_dict.items() if k == "module"}
+
+    return modules
 
 
 def create_tfile(content, file_path):
