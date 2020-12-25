@@ -9,18 +9,23 @@ Python version >=3.8
 Local
 
 ```shell script
-usage: terrafile [-h] [-f [FILE]] [-p PATH] [-l LEVEL] [-F]
+usage: terrafile [-h] [-a [{sync,generate}]] [-f [FILE]] [-p PATH] [-l LEVEL] [-F] [-m MODULE_PATH] [-r]
 
 Terraform modules control
 
 optional arguments:
   -h, --help            show this help message and exit
+  -a [{sync,generate}], --action [{sync,generate}]
+                        Start/Stop or Restart list of services or service
   -f [FILE], --file [FILE]
                         Tfile full path, if not present current directory
   -p PATH, --path PATH  Path for storing terraform modules, if not present current directory
   -l LEVEL, --level LEVEL
                         Terrafile level of logging
   -F, --force           Force re-download terraform modules from tfile
+  -m MODULE_PATH, --module_path MODULE_PATH
+                        Terraform module file, if you want to parse tf files in recursive mode please add -r flag
+  -r, --recursive       Recursive mode for parsing directory with terraform modules
 ```
 Via Docker
 
@@ -86,3 +91,37 @@ git clone git@github.com:pyToshka/pyTerrafile.git
 cd pyTerrafile
 docker build . -t  pyTerrafile
 ```
+
+### Generate tfile
+
+For generating tfile from exists terraform file(s) command run command
+
+For example file `foo.tf` has content
+```hcl-terraform
+module "service-accounts" {
+  source       = "terraform-google-modules/service-accounts/google"
+  version      = "3.0.1"
+
+}
+
+```
+You can generate tfile use command
+
+```shell script
+terrafile  -a generate -m ./foo.tf
+```
+
+Output will be
+
+```yaml
+service-accounts:
+  source: terraform-google-modules/service-accounts/google
+  version: 3.0.1
+```
+
+For recursive generation tfile from existing terraform files you can use command
+
+```shell script
+terrafile  -a generate -m /path/to/tf/modules -r
+```
+Script will try to find all 3rd party modules in terraform files and based on it will create tfile for using.

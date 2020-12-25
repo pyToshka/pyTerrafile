@@ -3,11 +3,21 @@ import logging
 import os
 
 from terrafile import install
+from terrafile.generator import generate
 
 loglevel = "ERROR"
 current_path = os.path.abspath(os.getcwd())
 parser = argparse.ArgumentParser(
     prog="terrafile", description="Terraform modules control"
+)
+parser.add_argument(
+    "-a",
+    "--action",
+    choices=["sync", "generate"],
+    nargs="?",
+    default="sync",
+    const="sync",
+    help="Start/Stop or Restart list of services or service",
 )
 parser.add_argument(
     "-f", "--file", nargs="?", help="Tfile full path, if not present current directory"
@@ -23,6 +33,18 @@ parser.add_argument(
     "--force",
     action="store_true",
     help="Force re-download terraform modules from tfile",
+)
+parser.add_argument(
+    "-m",
+    "--module_path",
+    help="Terraform module file, if you want to parse tf files in recursive "
+    "mode please add -r flag",
+)
+parser.add_argument(
+    "-r",
+    "--recursive",
+    help="Recursive mode for parsing directory with terraform modules",
+    action="store_true",
 )
 args = parser.parse_args()
 if args.file:
@@ -52,4 +74,13 @@ if loglevel == "DEBUG":
     requests_log.propagate = True
 else:
     http_client.HTTPConnection.debuglevel = 0
-install(tfile, module_path, loglevel, download_force)
+if "sync" in args.action:
+    install(tfile, module_path, loglevel, download_force)
+elif "generate" in args.action:
+    if not args.module_path:
+        logging.error("key -m is mandatory for generating tfile from terraform files")
+        exit(2)
+    if args.recursive:
+        generate(args.module_path, tfile, recursive=True)
+    else:
+        generate(args.module_path, tfile)

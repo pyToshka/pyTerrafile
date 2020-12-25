@@ -125,6 +125,7 @@ dmypy.json
 .pyre/
 .idea/
 test_m/
-/tests/
+tests/
 vendors/
 examples/vendors
+/terrafile/foo.tf
